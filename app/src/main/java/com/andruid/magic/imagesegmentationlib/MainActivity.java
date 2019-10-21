@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void pickImageR(){
         Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.imgd);
-
         readValues(bmp);
     }
 
@@ -76,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     ByteBuffer outData = ByteBuffer.allocateDirect(512*512*2*4);
 
 
-    public void addPixelValue(int pixelValue){
+    public void addPixelValue(int pixelValue, float alpha){
         //imByte.putFloat((((pixelValue >> 24) & 0xFF) - 128.f)/ 128.f);
         //imByte.putFloat((((pixelValue >> 16) & 0xFF)-128.f) / 128.f);
         //imByte.putFloat((((pixelValue >> 8) & 0xFF)-128.f) / 128.f);
@@ -90,14 +89,14 @@ public class MainActivity extends AppCompatActivity {
         imByte.putFloat(((pixelValue >> 24) & 0xFF) / 255.f);
         imByte.putFloat(((pixelValue >> 16) & 0xFF) / 255.f);//red24
         imByte.putFloat(((pixelValue >> 8) & 0xFF) / 255.f);//g16
-        imByte.putFloat((pixelValue & 0xFF) / 255.f);//b8
-
+        //imByte.putFloat((pixelValue & 0xFF) / 255.f);//b8
+        imByte.putFloat(alpha);
 
 
     }
 
     public void readValues(Bitmap bmp){
-
+        Log.d("VALUES","Starting readValues");
         imByte = ByteBuffer.allocateDirect(
 
                          512
@@ -123,7 +122,14 @@ public class MainActivity extends AppCompatActivity {
              }
              final int val = bmp.getPixel(i,j);
              //Log.d("PIXEL_IS","Pixel is "+val+" with "+bmp.getPixel(i,j));
-             addPixelValue(val);
+             /*if(j<256){
+                 addPixelValue(val,0.0f);
+             }
+             else{
+                 addPixelValue(val,1.0f);
+             }*/
+
+            addPixelValue(val,0.5f);
              //byte r = ((val >> 16) & 0xFF) / 255.f;
              /*int pix = bmp.getPixel(i,j);
              int r = Color.red(pix);
@@ -156,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
                         intent.setType("image/*");
                         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);*/
                         outData.rewind();
+                        Log.d("VALUES","Starting");
                         Bitmap mp = segmentor.segment(imByte,outData, getApplicationContext());
                         binding.imageView.setImageBitmap(mp);
                         //segmentor.generateNoteOnSD(getApplicationContext(),"mFile");
@@ -196,7 +203,6 @@ public class MainActivity extends AppCompatActivity {
                 }).check();*/
 
         pickImageR();
-
         /*Bitmap resource = BitmapFactory.decodeResource(getResources(),R.drawable.imgd);
         Bitmap resized = BitmapUtils.resize(resource);
         Bitmap outBitmap = segmentor.segment(resized);

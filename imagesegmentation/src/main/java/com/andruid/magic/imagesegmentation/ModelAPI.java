@@ -11,7 +11,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.tensorflow.lite.Interpreter;
-import org.tensorflow.lite.experimental.GpuDelegate;
+import  org.tensorflow.lite.gpu.GpuDelegate;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.Random;
 
 public class ModelAPI implements Segmentor {
-    private final static String MODEL_PATH = "softmax_cropped_4channel_512.tflite";
-   // private final static String MODEL_PATH = "deeplabv3_257_mv_gpu.tflite";
-    private final static boolean USE_GPU = false;
+    private final static String MODEL_PATH = "hair_segmentation.tflite";
+    //private final static String MODEL_PATH = "softmax_cropped_4channel_512.tflite";
+    private final static boolean USE_GPU = true;
 
     private static final float IMAGE_MEAN = 128.0f;
     private static final float IMAGE_STD = 128.0f;
@@ -134,15 +134,32 @@ public class ModelAPI implements Segmentor {
         return maskBitmap;
     }
 
+    /**
+     *
+     * float c = outuffer.getFloat(index)/outuffer.getFloat(index + 512*512);
+     *                 index =index+1;
+     *                 if(c<1.0){
+     *                    pixelsx[j*512+i] = Color.WHITE;
+     *
+     *                 }
+     *                 else{
+     *                     //Log.d("CHANNEL_!","2");
+     *                     pixelsx[j*512+i] = Color.BLACK;
+     *                 }
+     * @param inBuffer
+     * @param outuffer
+     * @param context
+     * @return
+     */
 
     //String body = "";
     @Override
     public Bitmap segment(ByteBuffer inBuffer, ByteBuffer outuffer,Context context) {
-
+        Log.d("VALUES","Inside segment Starting");
         Bitmap bmp = Bitmap.createBitmap(512,512, Bitmap.Config.ARGB_8888);
        // byte[] segmap = new byte[512*512*2];
         tflite.run(inBuffer,outuffer);
-
+        Log.d("VALUES","Starting");
         Log.d("RUN_FINISH","true");
 //pixels[j * 257 + i] =o_pixels[j*257+i]
 
@@ -151,16 +168,10 @@ public class ModelAPI implements Segmentor {
         for(int i=0;i<512;i++){
             for (int j=0;j<512;j++){
 
-                float c = outuffer.getFloat(index)/outuffer.getFloat(index + 512*512);
-                index =index+1;
-                if(c<1.0){
-                   pixelsx[j*512+i] = Color.RED;
 
-                }
-                else{
-                    //Log.d("CHANNEL_!","2");
-                    pixelsx[j*512+i] = Color.BLACK;
-                }
+
+
+
             }
         }
         Bitmap mp = Bitmap.createBitmap(pixelsx,512,512, Bitmap.Config.ARGB_8888);
